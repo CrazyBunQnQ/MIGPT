@@ -8,7 +8,7 @@
  
 _* 点[此链接](https://v.douyin.com/Sg8rMrJ/)观看2分半的测试视频_
  
-![image](https://github.com/Afool4U/MIGPT/blob/main/%E6%95%88%E6%9E%9C.png)
+![image](https://github.com/Afool4U/MIGPT/raw/main/%E6%95%88%E6%9E%9C.png)
 
 
 ## 使用方法

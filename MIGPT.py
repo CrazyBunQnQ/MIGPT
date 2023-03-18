@@ -47,7 +47,8 @@ if SOUND_TYPE not in HARDWARE_COMMAND_DICT:
     raise ValueError("{}不在型号列表中！请检查型号是否正确。".format(SOUND_TYPE))
 
 SWITCH = True  # 是否开启chatgpt回答
-PROMPT = "请用100字以内回答，第一句一定不要超过10个汉字或5个单词，并且请快速生成前几句话"  # 限制回答字数在100以内
+# PROMPT = "请用100字以内回答，第一句一定不要超过10个汉字或5个单词，并且请快速生成前几句话"  # 限制回答字数在100以内
+PROMPT = "不要做过多解释"  # 限制回答字数在100以内
 
 loop = asyncio.get_event_loop()
 
@@ -78,6 +79,7 @@ class MiGPT:
         self.chatbot = None  # a little slow to init we move it after xiaomi init
         self.user_id = ""
         self.device_id = ""
+        self.device_name = ""
         self.service_token = ""
         self.cookie = ""
         self.use_command = use_command
@@ -117,6 +119,8 @@ class MiGPT:
         for h in hardware_data:
             if h.get("hardware", "") == self.hardware:
                 self.device_id = h.get("deviceID")
+                self.device_name = h.get("name")
+                print("当前使用 " + h.get("name") + " 音箱")
                 break
         else:
             raise Exception(f"we have no hardware: {self.hardware} please check")
@@ -144,6 +148,8 @@ class MiGPT:
             ),
             cookies=parse_cookie_string(self.cookie),
         )
+        # 延迟 400ms
+        await asyncio.sleep(0.4)
         return await r.json()
 
     def get_last_timestamp_and_record(self, data):
@@ -158,7 +164,8 @@ class MiGPT:
     async def do_tts(self, value):
         if not self.use_command:
             try:
-                await self.mina_service.text_to_speech(self.device_id, value)
+                # await self.mina_service.text_to_speech(self.device_id, value)
+                await self.mina_service.text_to_speech2(self.device_name, HARDWARE_COMMAND_DICT.get(self.hardware, SOUND_TYPE), value)
             except:
                 # do nothing is ok
                 pass
@@ -200,6 +207,8 @@ class MiGPT:
             while True:
                 try:
                     r = await self.get_latest_ask_from_xiaoai()
+                    if r.get('code') != 0:
+                        print(r)
                 except Exception:
                     # we try to init all again
                     await self.init_all_data(session)

@@ -1,5 +1,7 @@
 import json
 from miaccount import MiAccount, get_random
+from miioservice import MiIOService
+import miiocommand
 
 import logging
 
@@ -39,6 +41,10 @@ class MiNAService:
         return await self.ubus_request(
             deviceId, "text_to_speech", "mibrain", {"text": text}
         )
+
+    async def text_to_speech2(self, deviceDid, soundType, text):
+        service = MiIOService(self.account)
+        return await self.miio_command(service, deviceDid, soundType + " " + text)
 
     async def player_set_volume(self, deviceId, volume):
         return await self.ubus_request(
@@ -104,3 +110,29 @@ class MiNAService:
                 if devno != -1 or not result:
                     break
         return result
+    async def miio_command(self, service: MiIOService, did, text):
+        cmd, arg = miiocommand.twins_split(text, ' ')
+        argv = arg.split(' ') if arg else []
+        argc = len(argv)
+        props = []
+        setp = True
+        miot = True
+        for item in cmd.split(','):
+            key, value = miiocommand.twins_split(item, '=')
+            siid, iid = miiocommand.twins_split(key, '-', '1')
+            if siid.isdigit() and iid.isdigit():
+                prop = [int(siid), int(iid)]
+            else:
+                prop = [key]
+                miot = False
+            if value is None:
+                setp = False
+            elif setp:
+                prop.append(miiocommand.string_or_value(value))
+            props.append(prop)
+
+        if miot and argc > 0:
+            args = [miiocommand.string_or_value(a) for a in argv] if arg != '#NA' else []
+            return await service.miot_action(did, props[0], args)
+        do_props = ((service.home_get_props, service.miot_get_props), (service.home_set_props, service.miot_set_props))[setp][miot]
+        return await do_props(did, props)
