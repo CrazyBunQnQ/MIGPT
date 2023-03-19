@@ -48,7 +48,8 @@ if SOUND_TYPE not in HARDWARE_COMMAND_DICT:
 
 SWITCH = True  # 是否开启chatgpt回答
 # PROMPT = "请用100字以内回答，第一句一定不要超过10个汉字或5个单词，并且请快速生成前几句话"  # 限制回答字数在100以内
-PROMPT = "不要做过多解释"  # 限制回答字数在100以内
+# PROMPT = "不要做过多解释也不要说'好的'"  # 限制回答字数在100以内
+PROMPT = "不要超过100字"  # 限制回答字数在100以内
 
 loop = asyncio.get_event_loop()
 
@@ -79,7 +80,7 @@ class MiGPT:
         self.chatbot = None  # a little slow to init we move it after xiaomi init
         self.user_id = ""
         self.device_id = ""
-        self.device_name = ""
+        self.device_did = ""
         self.service_token = ""
         self.cookie = ""
         self.use_command = use_command
@@ -119,7 +120,7 @@ class MiGPT:
         for h in hardware_data:
             if h.get("hardware", "") == self.hardware:
                 self.device_id = h.get("deviceID")
-                self.device_name = h.get("name")
+                self.device_did = h.get("miotDID")
                 print("当前使用 " + h.get("name") + " 音箱")
                 break
         else:
@@ -165,7 +166,7 @@ class MiGPT:
         if not self.use_command:
             try:
                 # await self.mina_service.text_to_speech(self.device_id, value)
-                await self.mina_service.text_to_speech2(self.device_name, HARDWARE_COMMAND_DICT.get(self.hardware, SOUND_TYPE), value)
+                await self.mina_service.text_to_speech2(self.device_did, HARDWARE_COMMAND_DICT.get(self.hardware, SOUND_TYPE), value)
             except:
                 # do nothing is ok
                 pass
