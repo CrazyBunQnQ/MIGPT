@@ -232,6 +232,10 @@ class MiGPT:
                         await self.do_tts("高级对话已关闭")
                         continue
                     if SWITCH:
+                        # 如果 query 以 "帮我" 开头
+                        if not query.startswith("帮我"):
+                            continue
+                        await self.do_tts('')  # 空串施法打断
                         commas = 0
                         wait_times = 3
                         await self.stop_if_xiaoai_is_playing()
@@ -256,6 +260,7 @@ class MiGPT:
                                 try:
                                     this_sentence = self.chatbot.sentence  # 获取句子（目前的）
                                     if this_sentence == "" and not thread.is_alive():
+                                        await self.do_tts(self.chatbot.full_sentence)
                                         break
                                     is_a_sentence = False
                                     for x in (("，", "。", "？", "！", "；", ",", ".", "?", "!", ";")
@@ -279,7 +284,8 @@ class MiGPT:
                                 if commas <= wait_times:
                                     commas += sum([1 for x in this_sentence if
                                                    x in {"，", "。", "？", "！", "；", ",", ".", "?", "!", ";"}]) + 1
-                                await self.do_tts(this_sentence)
+                                # await self.do_tts(this_sentence)
+                                await self.do_tts('')
                                 while await self.get_if_xiaoai_is_playing() and not \
                                         (await self.check_new_query(session))[0]:
                                     await asyncio.sleep(0.1)
@@ -295,7 +301,8 @@ class MiGPT:
                                                 lock.release()
                                             break
                                     await self.stop_if_xiaoai_is_playing()
-                                    await self.do_tts('')  # 空串施法打断
+                                    print("打断小爱的回答")
+                                    await self.do_tts('笨蛋小爱！还是我来说吧！')  # 空串施法打断
                                     if not self.chatbot.has_printed:
                                         print()
                                     if query.startswith('闭嘴'):

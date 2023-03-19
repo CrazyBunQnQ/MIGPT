@@ -41,6 +41,7 @@ class Chatbot:
         self.reply_count = reply_count
 
         self.sentence = ""
+        self.full_sentence = ""
         self.temp = ""
         self.has_printed = False
 
@@ -192,6 +193,7 @@ class Chatbot:
                     self.temp += content
                 print(content, end="")
                 full_response += content
+                self.full_sentence = full_response
         print()
         self.has_printed = True
         self.add_to_conversation(full_response, response_role, convo_id=convo_id)
